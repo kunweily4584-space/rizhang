@@ -1,5 +1,5 @@
 // 日帳 service worker：先用快取秒開，背景再更新
-const CACHE = 'rizhang-v1';
+const CACHE = 'rizhang-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -16,6 +16,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  const u = new URL(req.url);
+  if (u.hostname.endsWith('googleapis.com') && u.hostname !== 'fonts.googleapis.com' || u.hostname === 'accounts.google.com') return;
   e.respondWith(
     caches.open(CACHE).then(async cache => {
       const hit = await cache.match(req, { ignoreSearch: true });

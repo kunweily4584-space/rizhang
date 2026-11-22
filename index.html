@@ -407,6 +407,7 @@ function vQuick(){const b=BOOKS[Q.book];if(Q.book==='inspect')Q.kind='out';
  const cats=qCats();const more=cats.length>8;const show=more?cats.slice(0,7):cats;const noInv=Q.book==='invest'&&!cats.length;
  return `<div class="q" style="--c:${b.c}">
  <div class="qtop"><span class="tag">${tag}</span><input type="date" class="qdate" data-q="date" value="${Q.date}" aria-label="日期"><div class="qtoday">今日 <b class="num">${fmt(todaySum)}</b>${bi?(bi.left>=0?`<span>每天可花 <span class="num" style="color:var(--grn)">${fmt(bi.perDay)}</span></span>`:`<span class="up">已超支 <span class="num">${fmt(-bi.left)}</span></span>`):''}</div></div>
+ ${bakDue()?`<button class="due" data-a="quickbak">${bakDays()===Infinity?'還沒備份過':'已 '+bakDays()+' 天沒備份'}，手機出狀況資料會不見<b>立即備份 ›</b></button>`:''}
  ${due.length?`<button class="due ${due[0][1].st==='over'?'over':''}" data-a="recpay" data-id="${due[0][0].id}" data-d="${due[0][1].due}">${esc(due[0][0].name)} <span class="num">${fmt(due[0][0].amt)}</span>・${due[0][1].st==='over'?'過期 '+due[0][1].days+' 天':due[0][1].days?'還有 '+due[0][1].days+' 天':'今天到期'}${due.length>1?'（另 '+(due.length-1)+' 項）':''}<b>記一筆 ›</b></button>`:''}
  <div class="qamt" id="qbox"><span>$</span><b id="qa" class="z">0</b>${Q.book!=='inspect'?`<button class="kd ${Q.kind==='in'?'in':''}" data-a="qkind">${Q.book==='invest'?(Q.kind==='in'?'贖回':'投入'):(Q.kind==='in'?'收入':'支出')}</button>`:''}</div>
  <div class="bseg">${Object.entries(BOOKS).map(([k,v])=>`<button style="--c:${v.c}" class="${Q.book===k?'on':''}" data-a="qb" data-k="${k}">${esc(v.n)}</button>`).join('')}</div>
@@ -460,14 +461,70 @@ function recForm(){const b=BOOKS[R.book];const cats=CATS[R.book].out||[];if(!cat
 function settings(){const n=allTx().length;
  open(`<div class="sht"><b>設定與備份</b><button class="sbtn" data-a="close">完成</button></div>
  <div class="card" style="padding:14px;margin-bottom:12px;font-size:15px">${COL?'資料已存到你的 Claude 帳號雲端（只有你看得到），換手機或電腦開這個頁面會自動同步。':'目前資料只存在這台裝置的瀏覽器裡，建議定期匯出備份。'}<div class="lbl" style="margin-top:6px">共 ${n} 筆紀錄、${S.meta.rec.length} 個定期項目</div></div>
+ <h3 style="margin-top:4px">雲端備份<span class="lbl">${bakLabel()}</span></h3>
+ <div class="card" style="margin-bottom:12px">${gcid()?`<button class="row" data-a="gdup"><span class="grow"><b>一鍵備份到 Google 雲端硬碟</b><small>存到「日帳備份」資料夾，每天一份</small></span><span>›</span></button>
+ <button class="row" data-a="gdlist"><span class="grow"><b>從 Google 雲端硬碟還原</b><small>選擇某一天的備份</small></span><span>›</span></button>`:''}
+ <button class="row" data-a="sharebak"><span class="grow"><b>分享備份檔</b><small>跳出分享選單，選「雲端硬碟」即可存檔</small></span><span>›</span></button>
+ <button class="row" data-a="gdset"><span class="grow"><b>${gcid()?'Google 雲端硬碟連線設定':'設定一鍵備份到 Google 雲端硬碟'}</b><small>${gcid()?'已設定 Client ID':'需要一次性設定（約 10 分鐘）'}</small></span><span>›</span></button></div>
  <div class="card" style="margin-bottom:12px"><button class="row" data-a="cated"><span class="grow"><b>分類管理</b><small>新增、改名、刪除、排序；前 7 個會出現在記帳頁</small></span><span>›</span></button>
  <button class="row" data-a="coed"><span class="grow"><b>代墊對象與帳本名稱</b><small>驗屋公司清單（${COS.map(esc).join('、')}）</small></span><span>›</span></button></div>
  <div class="card"><button class="row" data-a="csv" data-k="m"><span class="grow"><b>匯出 ${mL(cur)} CSV</b><small>可用 Excel／Google 試算表開啟</small></span></button>
  <button class="row" data-a="csv" data-k="all"><span class="grow"><b>匯出全部 CSV</b></span></button>
  <button class="row" data-a="bak"><span class="grow"><b>匯出完整備份（JSON）</b><small>含定期花費，可再匯入還原</small></span></button>
- <label class="row"><span class="grow"><b>從備份還原</b><small>會覆蓋目前所有資料</small></span><input type="file" accept=".json,application/json" id="imp" style="width:7em;font-size:13px"></label></div>
+ <label class="row"><span class="grow"><b>從備份還原</b><small>會覆蓋目前所有資料</small></span><input type="file" accept=".json,.txt,application/json,text/plain" id="imp" style="width:7em;font-size:13px"></label></div>
  <div id="impok"></div>`)}
 
+/* ---------- backup to Google Drive ---------- */
+const LB='rizhang_lastbak',GC='rizhang_gcid',GF='rizhang_gfolder';
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+const gcid=()=>ls(GC);
+const bakDays=()=>{const t=+ls(LB);return t?Math.floor((Date.now()-t)/864e5):Infinity};
+const bakDue=()=>allTx().length>=5&&bakDays()>=7;
+const bakLabel=()=>{const d=bakDays();return d===Infinity?'尚未備份過':d===0?'今天已備份':'上次備份 '+d+' 天前'};
+const markBak=()=>{ls(LB,String(Date.now()))};
+const bakName=ext=>`日帳備份-${today()}.${ext}`;
+async function shareBak(){const txt=JSON.stringify(S);const f=new File([txt],bakName('txt'),{type:'text/plain'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:f.name});markBak();toast('已送出備份檔');render();return}catch(e){if(e&&e.name==='AbortError')return}}
+ await give(bakName('json'),txt);markBak();render()}
+let gTok=null,gExp=0;
+function loadGis(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();
+ const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>res();s.onerror=()=>rej(new Error('無法連到 Google，請確認網路'));document.head.appendChild(s)})}
+async function gToken(){if(gTok&&Date.now()<gExp)return gTok;await loadGis();const cid=gcid();if(!cid)throw new Error('尚未設定 Client ID');
+ return new Promise((res,rej)=>{const c=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
+  callback:r=>{if(r.error)return rej(new Error('授權失敗：'+r.error));gTok=r.access_token;gExp=Date.now()+((r.expires_in||3600)-60)*1000;res(gTok)},
+  error_callback:e=>rej(new Error(e&&e.type==='popup_closed'?'已取消登入':'無法開啟 Google 登入視窗'))});c.requestAccessToken({prompt:''})})}
+async function gfetch(url,opt={}){const t=await gToken();const r=await fetch(url,Object.assign({},opt,{headers:Object.assign({},opt.headers||{},{Authorization:'Bearer '+t})}));
+ if(r.status===401){gTok=null;throw new Error('授權過期，請再按一次')}if(!r.ok)throw new Error('雲端硬碟回應錯誤（'+r.status+'）');return r}
+const DAPI='https://www.googleapis.com/drive/v3/files';
+async function gFolder(){let id=ls(GF);if(id)return id;
+ const q=encodeURIComponent("name='日帳備份' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+ const j=await(await gfetch(`${DAPI}?q=${q}&fields=files(id)`)).json();id=j.files&&j.files[0]&&j.files[0].id;
+ if(!id)id=(await(await gfetch(DAPI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'日帳備份',mimeType:'application/vnd.google-apps.folder'})})).json()).id;
+ ls(GF,id);return id}
+async function gBackup(){toast('備份中…');try{const fid=await gFolder();const name=bakName('json'),body=JSON.stringify(S);
+ const q=encodeURIComponent(`name='${name}' and '${fid}' in parents and trashed=false`);
+ const ex=((await(await gfetch(`${DAPI}?q=${q}&fields=files(id)`)).json()).files||[])[0];
+ if(ex)await gfetch(`https://www.googleapis.com/upload/drive/v3/files/${ex.id}?uploadType=media`,{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+ else{const fd=new FormData();fd.append('metadata',new Blob([JSON.stringify({name,parents:[fid],mimeType:'application/json'})],{type:'application/json'}));fd.append('file',new Blob([body],{type:'application/json'}));
+  await gfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',body:fd})}
+ markBak();if($('#ov').classList.contains('show'))settings();else render();toast('已備份到 Google 雲端硬碟')}
+ catch(e){if(/404/.test(e.message))ls(GF,null);toast(e.message||'備份失敗')}}
+async function gList(){toast('讀取雲端備份…');try{const fid=await gFolder();
+ const j=await(await gfetch(`${DAPI}?q=${encodeURIComponent(`'${fid}' in parents and trashed=false`)}&orderBy=name desc&pageSize=30&fields=files(id,name,size)`)).json();
+ const L=j.files||[];open(`<div class="sht"><b>從雲端硬碟還原</b><button class="sbtn" data-a="settings">返回</button></div>
+ <div class="hint">選一份備份，確認後會覆蓋這台手機上的資料。</div>
+ <div class="card">${L.length?L.map(f=>`<button class="row" data-a="gdget" data-id="${f.id}"><span class="grow"><b>${esc(f.name)}</b><small>${f.size?Math.ceil(f.size/1024)+' KB':''}</small></span><span>›</span></button>`).join(''):'<div class="empty">雲端硬碟裡還沒有備份</div>'}</div><div id="impok"></div>`);
+ $('#toast').classList.remove('show')}catch(e){if(/404/.test(e.message))ls(GF,null);toast(e.message||'讀取失敗')}}
+function gSetSheet(){const o=location.origin;
+ open(`<div class="sht"><b>一鍵備份到 Google 雲端硬碟</b><button class="sbtn" data-a="settings">返回</button></div>
+ <div class="card box" style="font-size:15px;line-height:1.7">只需設定一次。到 Google Cloud Console（console.cloud.google.com，建議用電腦）：<br>
+ 1. 建立新專案，名稱例如「日帳」<br>2. 「API 和服務 › 程式庫」搜尋 <b>Google Drive API</b> 並啟用<br>
+ 3. 「OAuth 同意畫面」：選「外部」，填 App 名稱與你的 Email；在「測試使用者」加入你自己的 Gmail<br>
+ 4. 「憑證 › 建立憑證 › OAuth 用戶端 ID」：類型選「網頁應用程式」，「已授權的 JavaScript 來源」填入：<br><code style="user-select:all;font-weight:700">${esc(o)}</code><br>
+ 5. 建立後複製「用戶端 ID」，貼到下面</div>
+ <div class="fld" style="margin-top:12px">Client ID<input id="gcin" value="${esc(gcid()||'')}" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off"></div>
+ <div class="hint">日帳只會看到它自己建立的檔案（drive.file 權限），碰不到你雲端硬碟裡的其他東西。</div>
+ <button class="save" data-a="gcsave">儲存並測試備份</button>${gcid()?'<button class="del" data-a="gcclear">移除連線設定</button>':''}`)}
 function budSheet(){const bd=cfg().budget||{};const cs=CATS.personal.out;
  open(`<div class="sht"><b>每月預算</b><button class="sbtn" data-a="close">取消</button></div>
  <div class="fld">總預算<input inputmode="numeric" id="bdt" value="${bd.total||''}" placeholder="例如 20000"></div>
@@ -523,6 +580,12 @@ const A={
  go:d=>{view=d.v;location.hash=d.v==='quick'?'':d.v;sel.clear();render();scrollTo(0,0)},
  add:()=>newTx(),close,settings,
  bud:()=>budSheet(),
+ sharebak:()=>shareBak(),gdup:()=>gBackup(),gdlist:()=>gList(),gdset:()=>gSetSheet(),
+ quickbak:()=>gcid()?gBackup():shareBak(),
+ gcsave:()=>{const v=$('#gcin').value.trim();if(!/\.apps\.googleusercontent\.com$/.test(v)){toast('Client ID 應該以 .apps.googleusercontent.com 結尾');return}ls(GC,v);ls(GF,null);gTok=null;gBackup()},
+ gcclear:()=>{ls(GC,null);ls(GF,null);gTok=null;settings();toast('已移除連線設定')},
+ gdget:async d=>{try{toast('下載備份…');const txt=await(await gfetch(`${DAPI}/${d.id}?alt=media`)).text();const j=JSON.parse(txt);if(!j.meta||!j.months)throw new Error('檔案格式不對');window._imp=j;
+  $('#impok').innerHTML=`<div class="hint" style="margin-top:12px">這份備份有 ${Object.values(j.months).reduce((a,m)=>a+m.tx.length,0)} 筆紀錄。</div><button class="save" style="--c:var(--red)" data-a="impgo">確認覆蓋目前資料</button>`;$('#toast').classList.remove('show')}catch(e){toast(e.message||'還原失敗')}},
  budsave:()=>{const b=cfg().budget={total:+$('#bdt').value.replace(/[^\d.]/g,'')||0,cats:{}};document.querySelectorAll('[data-bc]').forEach(e=>{const v=+e.value.replace(/[^\d.]/g,'');if(v)b.cats[e.dataset.bc]=v});touch('meta');close();render();toast('預算已儲存')},
  invnew:()=>{IH={};invSheet()},invedit:d=>{IH=JSON.parse(JSON.stringify(S.meta.inv.find(h=>h.id===d.id)));invSheet()},
  invval:()=>valSheet(),
@@ -612,6 +675,7 @@ document.addEventListener('keydown',e=>{if(view==='quick'&&!F&&!R&&!/INPUT|TEXTA
 addEventListener('hashchange',()=>{const v=location.hash.slice(1)||'quick';if(v!==view&&VIEWS.includes(v)){view=v;render()}});
 render();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if(gcid())setTimeout(()=>loadGis().catch(()=>{}),1500);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
