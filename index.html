@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>日帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Sofia+Sans+Condensed:ital,wght@0,700;0,800;1,800&display=swap" rel="stylesheet">
 <style>
 /* VOICE: 安靜、俐落的日常工具，數字最大，其他都退後
    IDEA: 一本分成三色書籤的帳簿——個人／驗屋代墊／農場，各自分開不混帳
@@ -125,7 +125,7 @@ table{width:100%;border-collapse:collapse;font-size:15px}
 td,th{padding:9px 14px;border-bottom:1px solid var(--line);text-align:start}
 td.r,th.r{text-align:end}th{font-size:13px;color:var(--mute);font-weight:500}
 tfoot td{font-weight:700;border-bottom:0}
-nav{position:fixed;inset:auto 0 0;z-index:6;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom)}
+nav{position:fixed;inset:auto 0 0;z-index:6;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom)}
 nav button{min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--mute)}
 nav button svg{width:22px;height:22px}nav button.on{color:var(--p);font-weight:700}
 #ov{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
@@ -154,6 +154,28 @@ textarea{width:100%;min-height:200px;border-radius:12px;border:1px solid var(--l
 .crow button.x{color:var(--red)}.crow .sbtn{width:auto}
 .sign{text-align:center;font-size:13px;color:var(--mute);margin-top:18px}
 :focus-visible{outline:2px solid var(--p);outline-offset:2px}
+:root{--car:#ff4a1c}
+/* 車輛模式：競速儀表風——更深的底、朱紅、窄體數字、標題下的賽道條紋 */
+body.race{--bg:light-dark(#f4f3f0,#0b0b0c);--card:light-dark(#fff,#18181a);--card2:light-dark(#eceae5,#242427);--line:light-dark(#e1dfda,#2c2c30)}
+body.race .num,body.race .big,body.race .qamt b,body.race .qsm b,body.race .keys button,body.race .tiles b,body.race .tile b,body.race .amt,body.race .qtoday b{font-family:"Sofia Sans Condensed","Noto Sans TC",sans-serif;font-weight:800;letter-spacing:.01em}
+body.race .qamt b{font-size:clamp(54px,16vw,76px)}body.race .keys button{font-size:30px}
+body.race header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--car) 0 58%,transparent 58% 61%,var(--car) 61% 69%,transparent 69% 72%,var(--car) 72% 76%,transparent 76%)}
+body.race header h1{font-style:italic}
+body.race .tag{font-style:italic;font-family:"Sofia Sans Condensed","Noto Sans TC",sans-serif;font-weight:800;border-radius:3px;transform:skewX(-10deg)}
+body.race .mseg button.on{background:var(--car);color:#fff}
+body.race nav button.on{color:var(--car)}
+body.race .tiles button{border-radius:8px}
+body.race h3 button{color:var(--car)}
+.qlink{color:var(--car);font-weight:700;min-height:36px;padding:0 6px}
+.mseg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--card);border-radius:12px;padding:4px}
+.mseg button{min-height:38px;border-radius:9px;font-size:15px;color:var(--mute)}.mseg button.on{background:var(--ink);color:var(--bg);font-weight:700}
+.qf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.qsm{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--line);padding:2px;text-align:start;min-height:50px}
+.qsm.on{border-color:var(--c)}.qsm span{font-size:13px;color:var(--mute);flex:none}.qsm b{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qsm b.z{color:var(--mute);font-weight:400;opacity:.6}
+.qamt.off{border-color:var(--line)}
+.vchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}.vchips button{flex:none;min-height:38px;padding:0 14px;border-radius:99px;background:var(--card);font-size:15px;border:1.5px solid transparent}.vchips button.on{border-color:var(--c);color:var(--c);font-weight:700}
+.odo{display:flex;gap:4px;align-items:flex-end;margin:8px 0 4px}.odo span{background:#111;color:#f4f1ea;border-radius:7px;padding:4px 6px;font-size:clamp(30px,9vw,46px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums}.odo span.u{background:var(--car);color:#fff}.odo em{font-style:normal;color:var(--mute);font-size:15px;margin-inline-start:4px}
+svg.spark{width:100%;height:80px;display:block}
 </style>
 </head>
 <body>
@@ -162,6 +184,7 @@ textarea{width:100%;min-height:200px;border-radius:12px;border:1px solid var(--l
 <nav>
 <button data-a="go" data-v="quick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>記帳</button>
 <button data-a="go" data-v="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>總覽</button>
+<button data-a="go" data-v="car"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 16h18v3H3z"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/></svg>車輛</button>
 <button data-a="go" data-v="adv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></svg>代墊</button>
 <button data-a="go" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>分析</button>
 <button data-a="go" data-v="rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg>定期</button>
@@ -262,7 +285,7 @@ function recRow(r,ds_){const s=recStat(r,ds_);const b=BOOKS[r.book];
  return `<div class="row" style="--c:${b.c}"><span class="dot"></span><button class="grow" style="text-align:start" data-a="recedit" data-id="${r.id}"><b>${esc(r.name)} <span class="num" style="color:var(--mute);font-weight:400">${fmt(r.amt)}</span></b><small>${s.due?md(s.due):''} ${CYC[r.n]||''}・${b.n}${r.book==='inspect'?'・'+esc(r.co):''} ${tag}</small></button>${btn}${s.st==='over'?`<button class="sbtn" data-a="recskip" data-id="${r.id}" data-d="${s.due}">略過</button>`:''}</div>`}
 
 /* ---------- view state ---------- */
-const VIEWS=['quick','home','list','adv','stats','rec'];
+const VIEWS=['quick','home','list','car','adv','stats','rec'];
 let view=location.hash.slice(1)||'quick';if(!VIEWS.includes(view))view='quick';
 let cur=today().slice(0,7),lf='all',q='',ap='馨芙家',sel=new Set(),sb='personal';
 
@@ -395,17 +418,20 @@ function vRec(){const dset=doneSet();const recs=[...S.meta.rec].sort((a,b)=>(rec
 const GLY0={餐飲:'食',交通:'行',購物:'買',居家:'家',水電瓦斯:'電',電信網路:'訊',房租房貸:'租',車貸:'貸',保險:'保',醫療:'醫',娛樂:'樂',人情:'禮',其他:'他',薪資:'薪',獎金:'獎',代墊收回:'回',其他收入:'他',
  油資:'油',停車過路:'停',耗材工具:'材',餐費:'食',設施建材:'建',灌溉與水管系統:'水',苗種與育苗材料:'苗',土壤與肥培管理:'肥',病害防治與耗材:'藥',工具與輔助:'工',交通與雜支:'行',人員人事費用:'人',農產銷售:'售',補助:'補'};
 const SHORT={灌溉與水管系統:'灌溉水管',苗種與育苗材料:'苗種育苗',土壤與肥培管理:'土壤肥培',病害防治與耗材:'病害防治',工具與輔助:'工具輔助',交通與雜支:'交通雜支',人員人事費用:'人事費用',停車過路:'停車過路'};
-const Q={amt:'',book:'personal',co:S.meta.set.co||'馨芙家',adv:S.meta.set.farmAdv!==false,kind:'out',date:today(),note:''};
+const Q={amt:'',book:'personal',co:S.meta.set.co||'馨芙家',adv:S.meta.set.farmAdv!==false,kind:'out',date:today(),note:'',m:'tx',veh:S.meta.set.veh||'',odo:'',L:'',f:'amt',pay:S.meta.set.pay||'adv'};
 const qAdv=()=>Q.book==='inspect'||(Q.book==='farm'&&Q.adv&&Q.kind==='out');
 const qCats=()=>Q.book==='inspect'?CATS.inspect.out:(CATS[Q.book][Q.kind]||CATS[Q.book].out);
-function qShow(){const e=$('#qa');if(!e)return;const v=Q.amt;e.textContent=v?Number(v.split('.')[0]).toLocaleString('en-US')+(v.includes('.')?'.'+v.split('.')[1]:''):'0';e.classList.toggle('z',!v)}
-function vQuick(){const b=BOOKS[Q.book];if(Q.book==='inspect')Q.kind='out';
+const nfmt=v=>Number(v.split('.')[0]).toLocaleString('en-US')+(v.includes('.')?'.'+v.split('.')[1]:'');
+function qShow(){const e=$('#qa');if(e){const v=Q.amt;e.textContent=v?nfmt(v):'0';e.classList.toggle('z',!v)}
+ const o=$('#qo');if(o){o.textContent=Q.odo?nfmt(Q.odo):(odoNow(Q.veh)||0).toLocaleString('en-US');o.classList.toggle('z',!Q.odo)}
+ const l=$('#ql');if(l){if(Q.L){l.textContent=Q.L;l.classList.remove('z')}else{const v=vOf(Q.veh),p=v?+FP()[v.grade]:0,a=parseFloat(Q.amt);l.textContent=a>0&&p?(a/p).toFixed(2):'自動算';l.classList.add('z')}}}
+function vQuick(){if(Q.m!=='tx')return vQuickCar();const b=BOOKS[Q.book];if(Q.book==='inspect')Q.kind='out';
  const td=today();const tag=Q.book==='personal'?BOOKS.personal.n:Q.book==='inspect'?'驗屋・'+Q.co:Q.book==='invest'?(Q.kind==='in'?'投資贖回':'投資投入'):(Q.kind==='in'?'農場收入':Q.adv?'農場代墊':'農場');
  const bi=budgetInfo(td.slice(0,7));
  const todaySum=(S.months[td.slice(0,7)]?.tx||[]).filter(t=>t.date===td&&t.kind==='out'&&t.book==='personal').reduce((a,t)=>a+ +t.amt,0);
  const dset=doneSet();const due=S.meta.rec.map(r=>[r,recStat(r,dset)]).filter(([,s])=>s.st==='over'||s.st==='soon').sort((x,y)=>x[1].due>y[1].due?1:-1);
  const cats=qCats();const more=cats.length>8;const show=more?cats.slice(0,7):cats;const noInv=Q.book==='invest'&&!cats.length;
- return `<div class="q" style="--c:${b.c}">
+ return `<div class="q" style="--c:${b.c}">${modeSeg()}
  <div class="qtop"><span class="tag">${tag}</span><input type="date" class="qdate" data-q="date" value="${Q.date}" aria-label="日期"><div class="qtoday">今日 <b class="num">${fmt(todaySum)}</b>${bi?(bi.left>=0?`<span>每天可花 <span class="num" style="color:var(--grn)">${fmt(bi.perDay)}</span></span>`:`<span class="up">已超支 <span class="num">${fmt(-bi.left)}</span></span>`):''}</div></div>
  ${bakDue()?`<button class="due" data-a="quickbak">${bakDays()===Infinity?'還沒備份過':'已 '+bakDays()+' 天沒備份'}，手機出狀況資料會不見<b>立即備份 ›</b></button>`:''}
  ${due.length?`<button class="due ${due[0][1].st==='over'?'over':''}" data-a="recpay" data-id="${due[0][0].id}" data-d="${due[0][1].due}">${esc(due[0][0].name)} <span class="num">${fmt(due[0][0].amt)}</span>・${due[0][1].st==='over'?'過期 '+due[0][1].days+' 天':due[0][1].days?'還有 '+due[0][1].days+' 天':'今天到期'}${due.length>1?'（另 '+(due.length-1)+' 項）':''}<b>記一筆 ›</b></button>`:''}
@@ -417,9 +443,114 @@ function vQuick(){const b=BOOKS[Q.book];if(Q.book==='inspect')Q.kind='out';
  <div class="keys">${['1','2','3','4','5','6','7','8','9','.','0','del'].map(k=>`<button data-a="key" data-k="${k}" aria-label="${k==='del'?'刪除':k}">${k==='del'?'⌫':k}</button>`).join('')}</div>
  <div class="tiles">${noInv?'<button data-a="invnew" style="grid-column:span 4"><b>＋</b><small>先新增投資標的（例如 0050、美股、基金）</small></button>':''}${show.map(c=>`<button data-a="qsave" data-k="${esc(c)}"><b>${esc(GLYC[Q.book+'|'+c]||c[0])}</b><small>${esc(SHORT[c]||c)}</small></button>`).join('')}${more?'<button data-a="qmore"><b>⋯</b><small>更多</small></button>':''}</div>
  <div class="qhint">輸入金額 → 點分類就存好${qAdv()?'・這筆會進代墊清單':''}</div></div>`}
-function render(){applyCfg();
+
+/* ---------- 車輛：加油・保養 ---------- */
+const ITEMS=['機油','大保養','齒輪油','空濾','皮帶','煞車皮','輪胎','電瓶','火星塞','車燈','避震器','其他'];
+const IG={機油:'油',大保養:'保',齒輪油:'齒',空濾:'濾',皮帶:'帶',煞車皮:'煞',輪胎:'胎',電瓶:'電',火星塞:'塞',車燈:'燈',避震器:'震',其他:'他'};
+const PAYN={adv:'我付・公務',farm:'農場付',own:'私人使用'};
+const VEH=()=>S.meta.veh||(S.meta.veh=[]);
+const vOf=id=>VEH().find(v=>v.id===id);
+const FP=()=>S.meta.fp||(S.meta.fp={'92':31.2,'95':32.7,'98':34.7,'柴油':29.9});
+const vtx=id=>allTx().filter(t=>t.veh===id);
+const payOf=t=>t.book==='farm'?(t.adv?'adv':'farm'):'own';
+function odoNow(id){const v=vOf(id);let m=v?+v.odo0||0:0;vtx(id).forEach(t=>{if(+t.odo>m)m=+t.odo});return m}
+function fuelSer(id){const v=vOf(id);const rs=vtx(id).filter(t=>t.vt==='fuel'&&t.odo).map(t=>({...t})).sort((a,b)=>a.odo-b.odo||(a.date>b.date?1:-1));let km=0,L=0;
+ rs.forEach((r,i)=>{const prev=i?rs[i-1].odo:(v&&+v.odo0&&+v.odo0<r.odo?+v.odo0:null);r.km=prev?r.odo-prev:null;r.eff=r.km>0&&r.L>0?r.km/r.L:null;if(r.eff){km+=r.km;L+=+r.L}});return{rs,avg:L?km/L:null}}
+function vBook(v,pay){if(v&&v.farm&&pay!=='own'){const c=CATS.farm.out;return{book:'farm',adv:pay==='adv',cat:c.includes('交通與雜支')?'交通與雜支':c[c.length-1]}}
+ const c=CATS.personal.out;return{book:'personal',cat:c.includes('交通')?'交通':c[0]}}
+function defIv(t){return t==='機車'?{機油:{km:1200,m:4},齒輪油:{km:3000,m:0},空濾:{km:6000,m:0}}:{機油:{km:5000,m:6},空濾:{km:20000,m:0}}}
+function rems(v){const cur_=odoNow(v.id),o=[];
+ for(const[item,iv]of Object.entries(v.iv||{})){if(!iv||(!iv.km&&!iv.m))continue;
+  const last=vtx(v.id).filter(t=>t.vt==='maint'&&t.item===item).sort((a,b)=>(b.odo||0)-(a.odo||0)||(a.date<b.date?1:-1))[0];
+  if(!last){o.push({item,st:'n',txt:'尚無紀錄'});continue}
+  const left=iv.km&&last.odo?+last.odo+ +iv.km-cur_:null;let days=null;
+  if(iv.m){const d=parse(last.date);d.setMonth(d.getMonth()+ +iv.m);days=diff(ds(d),today())}
+  const over=(left!=null&&left<=0)||(days!=null&&days<=0),soon=(left!=null&&left<=iv.km*.15)||(days!=null&&days<=14);
+  const p=[];if(left!=null)p.push(left>0?'還剩 '+left.toLocaleString()+' km':'超過 '+(-left).toLocaleString()+' km');if(days!=null)p.push(days>0?days+' 天內':'逾期 '+(-days)+' 天');
+  o.push({item,st:over?'over':soon?'soon':'ok',txt:p.join('・')})}
+ const R_={over:0,soon:1,ok:2,n:3};return o.sort((a,b)=>R_[a.st]-R_[b.st])}
+const modeSeg=()=>`<div class="mseg" style="grid-template-columns:repeat(2,minmax(0,1fr))">${[['tx','記帳'],['fuel','加油']].map(([k,n])=>`<button class="${(Q.m==='maint'?'fuel':Q.m)===k?'on':''}" data-a="qm" data-k="${k}">${n}</button>`).join('')}</div>`;
+const presetCard=()=>`<div class="card box" style="margin-top:12px"><div class="lbl" style="margin-bottom:10px">還沒有車輛。可以一鍵帶入你現在用的三台車（里程用目前的數字），之後再匯入舊紀錄。</div>
+ <button class="save" style="--c:var(--car)" data-a="vpreset">建立 NZC-6306、AKQ-6313（公務）、公務車 252</button><button class="del" style="color:var(--ink)" data-a="vedit" data-k="new">自己新增一台</button></div>`;
+function vQuickCar(){const V=VEH();if(!V.length)return `<div class="q">${modeSeg()}${presetCard()}</div>`;
+ if(!vOf(Q.veh))Q.veh=V[0].id;const v=vOf(Q.veh),fuel=Q.m==='fuel',last=odoNow(v.id);
+ const rm=rems(v).filter(r=>r.st==='over'||r.st==='soon');
+ let tiles;
+ if(fuel){const gs=Object.keys(FP()).sort((a,b)=>(b===v.grade)-(a===v.grade));
+  tiles=gs.map(g=>`<button data-a="csave" data-k="${esc(g)}" ${g===v.grade?'style="border-bottom-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--card2))"':''}><b>${g==='柴油'?'柴':esc(g)}</b><small>${g==='柴油'?'柴油':'無鉛'} ${FP()[g]}</small></button>`).join('')}
+ else{const show=ITEMS.slice(0,7);tiles=show.map(i=>`<button data-a="csave" data-k="${i}"><b>${IG[i]}</b><small>${i}</small></button>`).join('')+'<button data-a="cmore"><b>⋯</b><small>更多</small></button>'}
+ const lastF=fuelSer(v.id).rs.slice(-1)[0];
+ return `<div class="q" style="--c:var(--car)">${modeSeg()}
+ <div class="vchips">${V.map(x=>`<button class="${x.id===v.id?'on':''}" data-a="qveh" data-k="${x.id}">${esc(x.name)}</button>`).join('')}<button data-a="vedit" data-k="new" aria-label="新增車輛">＋</button></div>
+ <div class="qtop"><span class="tag">${fuel?'加油':'保養'}・${esc(v.name)}</span><input type="date" class="qdate" data-q="date" value="${Q.date}" aria-label="日期"><div class="qtoday">${fuel?'平均':'目前'} <b class="num">${fuel?(fuelSer(v.id).avg?fuelSer(v.id).avg.toFixed(1)+' km/L':'—'):last.toLocaleString()+' km'}</b></div></div>
+ ${rm.length?`<button class="due ${rm[0].st==='over'?'over':''}" data-a="qm" data-k="maint">${esc(rm[0].item)}・${esc(rm[0].txt)}${rm.length>1?'（另 '+(rm.length-1)+' 項）':''}<b>${Q.m==='maint'?'':'記保養 ›'}</b></button>`:''}
+ ${v.farm?`<div class="sub2">${Object.entries(PAYN).map(([k,n])=>`<button class="${Q.pay===k?'on':''}" data-a="qpay" data-k="${k}">${n}</button>`).join('')}</div>`:''}
+ <div class="qamt ${Q.f==='amt'?'':'off'}" id="qbox" data-a="qf" data-k="amt"><span>$</span><b id="qa" class="z">0</b></div>
+ <div class="qf"><button class="qsm ${Q.f==='odo'?'on':''}" id="qodo" data-a="qf" data-k="odo"><span>里程</span><b id="qo" class="z"></b></button>${fuel?`<button class="qsm ${Q.f==='L'?'on':''}" data-a="qf" data-k="L"><span>公升</span><b id="ql" class="z"></b></button>`:`<div class="qsm" style="border-color:transparent"><span>上次加油</span><b class="z" style="font-size:18px">${lastF?md(lastF.date):'—'}</b></div>`}</div>
+ <input class="qnote" data-q="note" value="${esc(Q.note)}" placeholder="備註（可不填）">
+ <div class="keys">${['1','2','3','4','5','6','7','8','9','.','0','del'].map(k=>`<button data-a="key" data-k="${k}" aria-label="${k==='del'?'刪除':k}">${k==='del'?'⌫':k}</button>`).join('')}</div>
+ <div class="tiles">${tiles}</div>
+ <div class="qhint">${fuel?'金額 → 里程 → 點油品就存好':'金額 → 里程 → 點保養項目就存好'}${v.farm?'・'+({adv:'記成農場代墊',farm:'記在農場帳',own:'記在個人帳'})[Q.pay]:''}<br>${fuel?'<button class="qlink" data-a="qm" data-k="maint">換機油、保養？記保養 ›</button>':'<button class="qlink" data-a="qm" data-k="fuel">‹ 回到加油</button>'}</div></div>`}
+let carSel='';
+function vCar(){const V=VEH();if(!V.length)return presetCard();
+ if(!vOf(carSel))carSel=vOf(S.meta.set.veh)?S.meta.set.veh:V[0].id;const v=vOf(carSel);
+ const now=odoNow(v.id),{rs,avg}=fuelSer(v.id);const mr=vtx(v.id).filter(t=>t.vt==='maint').sort((a,b)=>(a.date<b.date?1:-1));
+ const yr=today().slice(0,4),ycost=vtx(v.id).filter(t=>t.date.startsWith(yr)).reduce((s,t)=>s+ +t.amt,0);
+ const dg=String(now).padStart(6,'0').split('');
+ const pts=rs.filter(r=>r.eff).slice(-24);let spark='';
+ if(pts.length>1){const es=pts.map(r=>r.eff),lo=Math.min(...es),hi=Math.max(...es),W=300,H=80,sx=i=>i/(pts.length-1)*W,sy=e=>H-6-(hi===lo?.5:(e-lo)/(hi-lo))*(H-14);
+  spark=`<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${sy(avg)}" y2="${sy(avg)}" stroke="var(--mute)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/><polyline fill="none" stroke="var(--car)" stroke-width="2.5" vector-effect="non-scaling-stroke" points="${pts.map((r,i)=>sx(i)+','+sy(r.eff)).join(' ')}"/></svg><div class="lbl" style="font-size:13px">近 ${pts.length} 次油耗・虛線是平均</div>`}
+ let farm='';if(v.farm){const m=today().slice(0,7);const ft=vtx(v.id).filter(t=>t.date.startsWith(m));const sm=k=>ft.filter(t=>payOf(t)===k).reduce((s,t)=>s+ +t.amt,0);
+  farm=`<h3>公務車・${mL(m)}</h3><div class="card"><div class="kv"><div><span>我付・公務（代墊）</span><b class="num" style="color:var(--i)">${fmt(sm('adv'))}</b></div><div><span>農場付</span><b class="num">${fmt(sm('farm'))}</b></div><div><span>私人使用</span><b class="num">${fmt(sm('own'))}</b></div><div><span>合計</span><b class="num">${fmt(ft.reduce((s,t)=>s+ +t.amt,0))}</b></div></div></div>`}
+ const rm=rems(v);
+ return `<div class="vchips" style="--c:var(--car);margin:6px 0 4px">${V.map(x=>`<button class="${x.id===v.id?'on':''}" data-a="csel" data-k="${x.id}">${esc(x.name)}</button>`).join('')}<button data-a="vedit" data-k="new" aria-label="新增車輛">＋</button></div>
+ <section class="hero" style="padding-top:8px"><div class="lbl">${esc(v.plate||v.name)}・${esc(v.type)}・${esc(v.grade)}${v.grade==='柴油'?'':' 無鉛'}${v.farm?'・農場公務車':''}<button class="sbtn" style="float:right;margin-top:-6px" data-a="vedit" data-k="${v.id}">編輯</button></div>
+ <div class="odo">${dg.map((d,i)=>`<span${i===dg.length-1?' class="u"':''}>${d}</span>`).join('')}<em>km</em></div></section>
+ <div class="duo"><div class="tile"><span class="lbl">平均油耗</span><b class="num">${avg?avg.toFixed(2):'—'}<span style="font-size:14px;font-weight:500"> km/L</span></b><small>加油 ${rs.length} 次</small></div><div class="tile"><span class="lbl">${yr} 年花費</span><b class="num">${fmt(ycost)}</b><small>全部 ${fmt(vtx(v.id).reduce((s,t)=>s+ +t.amt,0))}</small></div></div>
+ ${spark?`<div class="card box" style="margin-top:10px">${spark}</div>`:''}
+ ${farm}
+ <h3>保養提醒<button data-a="cgo" data-k="maint">記保養</button></h3>
+ <div class="card">${rm.length?rm.map(r=>`<div class="row" style="--c:${r.st==='over'?'var(--red)':r.st==='soon'?'var(--warn)':'var(--line)'}"><span class="dot"></span><span class="grow"><b>${esc(r.item)}</b></span><span class="lbl">${esc(r.txt)}</span></div>`).join(''):'<div class="empty">到「編輯」設定保養週期，例如機油每 1,200 公里</div>'}</div>
+ <h3>加油紀錄<button data-a="cgo" data-k="fuel">記加油</button></h3>
+ <div class="card">${rs.length?rs.slice().reverse().slice(0,40).map(r=>`<button class="row" style="--c:var(--car)" data-a="edit" data-id="${r.id}"><span class="dot"></span><span class="grow"><b class="num">${r.eff?r.eff.toFixed(2)+' km/L':'首筆'}</b><small>${md(r.date)}・${(+r.L||0).toFixed(2)} L${r.km?'・'+r.km+' km':''}${v.farm?'・'+PAYN[payOf(r)]:''}</small></span><span style="text-align:end"><span class="amt num">${fmt(r.amt)}</span><small class="num" style="display:block;font-size:12px;color:var(--mute)">${(+r.odo).toLocaleString()}</small></span></button>`).join(''):'<div class="empty">還沒有加油紀錄</div>'}</div>
+ <h3>保養紀錄</h3>
+ <div class="card">${mr.length?mr.slice(0,40).map(r=>`<button class="row" style="--c:var(--mute)" data-a="edit" data-id="${r.id}"><span class="dot"></span><span class="grow"><b>${esc(r.item)}</b><small>${md(r.date)}${r.odo?'・'+(+r.odo).toLocaleString()+' km':''}${v.farm?'・'+PAYN[payOf(r)]:''}</small></span><span class="amt num">${fmt(r.amt)}</span></button>`).join(''):'<div class="empty">還沒有保養紀錄</div>'}</div>`}
+let VE=null;
+function readIv(){if(!VE)return;const iv={};document.querySelectorAll('[data-ivk]').forEach(e=>{const i=e.dataset.ivk,km=+e.value||0,m=+(document.querySelector(`[data-ivm="${i}"]`)||{}).value||0;if(km||m)iv[i]={km,m}});VE.iv=iv}
+function vehSheet(){const v=VE;open(`<div style="--c:var(--car)"><div class="sht"><b>${v._new?'新增車輛':'編輯車輛'}</b><button class="sbtn" data-a="close">取消</button></div>
+ <div class="fld">名稱<input data-ve="name" value="${esc(v.name)}" placeholder="例如 NZC、菱利"></div>
+ <div class="fld">車牌<input data-ve="plate" value="${esc(v.plate)}"></div>
+ <div class="seg">${['機車','汽車','貨車'].map(k=>`<button class="${v.type===k?'on':''}" data-a="vset" data-p="type" data-k="${k}">${k}</button>`).join('')}</div>
+ <div class="seg">${Object.keys(FP()).map(g=>`<button class="${v.grade===g?'on':''}" data-a="vset" data-p="grade" data-k="${esc(g)}">${g==='柴油'?g:g+' 無鉛'}</button>`).join('')}</div>
+ <div class="seg"><button class="${v.farm?'':'on'}" data-a="vset" data-p="farm" data-k="0">自用</button><button class="${v.farm?'on':''}" data-a="vset" data-p="farm" data-k="1">農場公務車</button></div>
+ <div class="fld">起始里程<input data-ve="odo0" inputmode="numeric" value="${esc(v.odo0||'')}"></div>
+ <div class="hint">填上次加滿油時的里程，下一次加油就能算出油耗。</div>
+ <h3>保養週期（公里／月，留空＝不提醒）</h3>
+ <div class="card">${ITEMS.filter(i=>i!=='其他').map(i=>{const x=(v.iv||{})[i]||{};return `<div class="crow"><span style="flex:1;padding-inline-start:4px">${i}</span><input data-ivk="${i}" inputmode="numeric" style="flex:none;width:6.5em;text-align:end" placeholder="公里" value="${x.km||''}"><input data-ivm="${i}" inputmode="numeric" style="flex:none;width:4em;text-align:end" placeholder="月" value="${x.m||''}"></div>`}).join('')}</div>
+ <button class="save" data-a="vsave">儲存</button>${v._new?'':'<button class="del" data-a="vdel">刪除這台車</button>'}</div>`)}
+function fpSheet(){open(`<div style="--c:var(--car)"><div class="sht"><b>車輛與油價</b><button class="sbtn" data-a="settings">完成</button></div>
+ <h3 style="margin-top:4px">車輛<button data-a="vedit" data-k="new">＋ 新增</button></h3>
+ <div class="card">${VEH().length?VEH().map(v=>`<button class="row" data-a="vedit" data-k="${v.id}"><span class="grow"><b>${esc(v.name)}</b><small>${esc(v.plate)}・${esc(v.type)}${v.farm?'・農場公務車':''}</small></span><span>›</span></button>`).join(''):'<div class="empty">還沒有車輛</div>'}</div>
+ <h3>油價（每公升）</h3>
+ <div class="card">${Object.entries(FP()).map(([g,p])=>`<div class="crow"><span style="flex:1;padding-inline-start:4px">${g==='柴油'?g:g+' 無鉛'}</span><input data-fp="${esc(g)}" inputmode="decimal" style="flex:none;width:7em;text-align:end" value="${p}"></div>`).join('')}</div>
+ <div class="hint" style="margin-top:8px">加油時用這裡的單價換算公升；油價調整時改這裡就好。</div>
+ <h3>匯入舊 App 加油紀錄</h3>
+ <div class="card"><label class="row"><span class="grow"><b>選擇車輛紀錄檔（.json，含加油與保養）</b><small>重複的紀錄（同一台車、同里程）會自動略過</small></span><input type="file" accept=".json,application/json,text/plain" id="vimp" style="width:7em;font-size:13px"></label></div><div id="vimpok"></div></div>`)}
+function vImport(j){let v=VEH().find(x=>x.plate===j.plate)||VEH().find(x=>x.name===j.name);
+ if(!v){v={id:nid(),name:j.name,plate:j.plate,type:j.vtype||'機車',grade:j.grade||'92',farm:!!j.farm,odo0:0,iv:defIv(j.vtype||'機車')};VEH().push(v)}
+ const have=new Set(vtx(v.id).filter(t=>t.vt==='fuel').map(t=>+t.odo));let n=0,skip=0,sum=0;
+ const pay=v.farm?(j.pay||'farm'):'own',b=vBook(v,pay);
+ j.records.forEach(r=>{if(have.has(+r.odo)){skip++;return}
+  const t={id:nid(),kind:'out',book:b.book,amt:+r.amt,cat:b.cat,date:r.date,note:'加油・'+v.name,veh:v.id,vt:'fuel',odo:+r.odo,L:+r.L,g:r.g||v.grade,imp:1};
+  if(b.book==='farm'){t.adv=b.adv;if(b.adv)t.st='pending'}addTx(t);n++;sum+= +r.amt});
+ const have2=new Set(vtx(v.id).filter(t=>t.vt==='maint').map(t=>t.date+'|'+t.item+'|'+t.odo));let mn=0;
+ (j.maint||[]).forEach(r=>{if(have2.has(r.date+'|'+r.item+'|'+r.odo)){skip++;return}
+  const t={id:nid(),kind:'out',book:b.book,amt:+r.amt,cat:b.cat,date:r.date,note:r.item+'・'+v.name,veh:v.id,vt:'maint',item:r.item,odo:+r.odo,imp:1};
+  if(b.book==='farm'){t.adv=b.adv;if(b.adv)t.st='pending'}addTx(t);mn++;sum+= +r.amt});
+ touch('meta');carSel=v.id;return{n,mn,skip,sum,v}}
+function render(){applyCfg();document.body.classList.toggle('race',view==='car'||(view==='quick'&&Q.m!=='tx'));
  document.querySelectorAll('nav [data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===view||(view==='list'&&b.dataset.v==='home')));
- $('#main').innerHTML={quick:vQuick,home:vHome,list:vList,adv:vAdv,stats:vStats,rec:vRec}[view]()+(view==='quick'?'':'<div class="sign">annjohn 與他的ai小夥伴協力製作</div>');qShow()}
+ $('#main').innerHTML={quick:vQuick,home:vHome,list:vList,car:vCar,adv:vAdv,stats:vStats,rec:vRec}[view]()+(view==='quick'?'':'<div class="sign">annjohn 與他的ai小夥伴協力製作</div>');qShow()}
 
 /* ---------- sheet ---------- */
 let F=null,R=null,armed=false;
@@ -436,6 +567,7 @@ function txForm(){const b=BOOKS[F.book];const kinds=F.book==='inspect'?[['out','
  <input class="amtin" id="famt" data-f="amt" inputmode="decimal" placeholder="$0" value="${esc(F.amt)}" aria-label="金額">
  <div class="cats">${cats.map(c=>`<button class="${F.cat===c?'on':''}" data-a="fc" data-k="${c}">${c}</button>`).join('')}</div>
  <div class="fld">日期<input type="date" data-f="date" value="${F.date}"></div>
+ ${F.veh?`<div class="fld">里程<input data-f="odo" inputmode="numeric" value="${esc(F.odo??'')}"></div>${F.vt==='fuel'?`<div class="fld">公升<input data-f="L" inputmode="decimal" value="${esc(F.L??'')}"></div>`:''}${F.vt==='maint'?`<div class="fld">保養項目<select data-f="item">${ITEMS.map(i=>`<option ${F.item===i?'selected':''}>${i}</option>`).join('')}</select></div>`:''}`:''}
  <div class="fld">備註<input data-f="note" value="${esc(F.note)}" placeholder="${F.book==='inspect'?'案場名稱、地點':'選填'}"></div>
  ${adv&&F.id?`<div class="fld">狀態<select data-f="st">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${F.st===k?'selected':''}>${v[0]}</option>`).join('')}</select></div>`:''}
  ${adv?`<div class="hint">這筆是代墊款：不算進個人支出，會列在「代墊」等待請款。</div>`:''}
@@ -467,6 +599,7 @@ function settings(){const n=allTx().length;
  <button class="row" data-a="sharebak"><span class="grow"><b>分享備份檔</b><small>跳出分享選單，選「雲端硬碟」即可存檔</small></span><span>›</span></button>
  <button class="row" data-a="gdset"><span class="grow"><b>${gcid()?'Google 雲端硬碟連線設定':'設定一鍵備份到 Google 雲端硬碟'}</b><small>${gcid()?'已設定 Client ID':'需要一次性設定（約 10 分鐘）'}</small></span><span>›</span></button></div>
  <div class="card" style="margin-bottom:12px"><button class="row" data-a="cated"><span class="grow"><b>分類管理</b><small>新增、改名、刪除、排序；前 7 個會出現在記帳頁</small></span><span>›</span></button>
+ <button class="row" data-a="fped"><span class="grow"><b>車輛與油價</b><small>${VEH().length} 台車・92 無鉛 ${FP()['92']}</small></span><span>›</span></button>
  <button class="row" data-a="coed"><span class="grow"><b>代墊對象與帳本名稱</b><small>驗屋公司清單（${COS.map(esc).join('、')}）</small></span><span>›</span></button></div>
  <div class="card"><button class="row" data-a="csv" data-k="m"><span class="grow"><b>匯出 ${mL(cur)} CSV</b><small>可用 Excel／Google 試算表開啟</small></span></button>
  <button class="row" data-a="csv" data-k="all"><span class="grow"><b>匯出全部 CSV</b></span></button>
@@ -605,7 +738,37 @@ const A={
  comv:d=>{const L=cfg().cos,i=+d.i,j=i+ +d.k;[L[i],L[j]]=[L[j],L[i]];touch('meta');coEd()},
  codel:d=>{const L=cfg().cos;if(L.length<2){toast('至少要保留一間公司');return}const i=+d.i,x=L.splice(i,1)[0];touch('meta');coEd();toast('已刪除「'+x+'」',()=>{L.splice(i,0,x);touch('meta');coEd()})},
  coadd:()=>{const n=$('#conew').value.trim();const L=cfg().cos;if(!n||n==='農場')return;if(L.includes(n)){toast('已經有這間公司');return}L.push(n);touch('meta');coEd()},
- key:d=>{let v=Q.amt;if(d.k==='del')v=v.slice(0,-1);else if(d.k==='.'){if(!v.includes('.'))v=(v||'0')+'.'}else{if(v==='0')v='';if(v.includes('.')&&v.split('.')[1].length>=2)return;if(v.replace('.','').length>=9)return;v+=d.k}Q.amt=v;qShow()},
+ key:d=>{const fl=Q.m==='tx'?'amt':Q.f,int=fl==='odo';let v=Q[fl];if(d.k==='del')v=v.slice(0,-1);else if(d.k==='.'){if(int)return;if(!v.includes('.'))v=(v||'0')+'.'}else{if(v==='0')v='';if(v.includes('.')&&v.split('.')[1].length>=(fl==='L'?3:2))return;if(v.replace('.','').length>=(int?7:9))return;v+=d.k}Q[fl]=v;qShow()},
+ qm:d=>{Q.m=d.k;Q.f='amt';if(view!=='quick'){view='quick';location.hash=''}render()},
+ qveh:d=>{Q.veh=d.k;Q.odo='';Q.L='';render()},qpay:d=>{Q.pay=d.k;render()},qf:d=>{Q.f=d.k;render()},
+ cgo:d=>{Q.veh=carSel;Q.m=d.k;Q.f='amt';view='quick';location.hash='';render();scrollTo(0,0)},
+ csel:d=>{carSel=d.k;render()},
+ cmore:()=>open(`<div class="sht"><b>保養項目</b><button class="sbtn" data-a="close">取消</button></div><div class="tiles" style="--c:var(--car)">${ITEMS.map(i=>`<button data-a="csave" data-k="${i}"><b>${IG[i]}</b><small>${i}</small></button>`).join('')}</div>`),
+ csave:d=>{const v=vOf(Q.veh);if(!v)return;if($('#ov').classList.contains('show'))close();
+  const shk=id=>{const e=$('#'+id);if(e){e.classList.remove('shake');void e.offsetWidth;e.classList.add('shake')}};
+  const amt=parseFloat(Q.amt);if(!(amt>0)){Q.f='amt';render();shk('qbox');toast('先輸入金額');return}
+  const odo=parseInt(Q.odo,10),fuel=Q.m==='fuel',date=Q.date||today();
+  if(fuel){if(!(odo>0)){Q.f='odo';render();shk('qodo');toast('輸入目前里程才能算油耗');return}
+   const pf=fuelSer(v.id).rs.filter(r=>r.date<=date).pop();if(pf&&odo<=pf.odo){Q.f='odo';render();shk('qodo');toast('里程比上次加油（'+(+pf.odo).toLocaleString()+'）還少');return}}
+  const price=fuel?+FP()[d.k]||0:0,L=fuel?(parseFloat(Q.L)||(price?+(amt/price).toFixed(2):0)):0;
+  if(fuel&&!(L>0)){Q.f='L';render();toast('請輸入公升數');return}
+  const pay=v.farm?Q.pay:'own',b=vBook(v,pay);
+  const t={id:nid(),kind:'out',book:b.book,amt,cat:b.cat,date,note:Q.note.trim()||((fuel?'加油':d.k)+'・'+v.name),veh:v.id,vt:Q.m};
+  if(odo>0)t.odo=odo;if(fuel){t.L=L;t.g=d.k}else t.item=d.k;
+  if(b.book==='farm'){t.adv=b.adv;if(b.adv)t.st='pending'}
+  S.meta.set.veh=v.id;if(v.farm)S.meta.set.pay=pay;
+  addTx(t);touch('meta');Q.amt='';Q.odo='';Q.L='';Q.note='';Q.f='amt';render();try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}
+  let msg=fuel?`已記加油 ${fmt(amt)}・${L} L`:`已記 ${d.k} ${fmt(amt)}`;
+  if(fuel){const r=fuelSer(v.id).rs.find(x=>x.id===t.id);if(r&&r.eff)msg+=`・${r.eff.toFixed(2)} km/L`}
+  if(t.adv)msg+='・農場代墊';toast(msg,()=>rmTx(t.id))},
+ vpreset:()=>{S.meta.veh=[{id:nid(),name:'NZC',plate:'NZC-6306',type:'機車',grade:'92',farm:false,odo0:38075,iv:defIv('機車')},{id:nid(),name:'AKQ-6313',plate:'AKQ-6313',type:'貨車',grade:'92',farm:true,odo0:115812,iv:defIv('貨車')},{id:nid(),name:'公務車252',plate:'252-TFP',type:'機車',grade:'92',farm:true,odo0:29300,iv:defIv('機車')}];touch('meta');render();toast('已建立三台車，可到「車輛 › 編輯」調整')},
+ vedit:d=>{VE=d.k==='new'?{_new:1,id:nid(),name:'',plate:'',type:'機車',grade:'92',farm:false,odo0:'',iv:defIv('機車')}:JSON.parse(JSON.stringify(vOf(d.k)));armed=false;vehSheet()},
+ vset:d=>{readIv();if(d.p==='farm')VE.farm=d.k==='1';else VE[d.p]=d.k;if(d.p==='type'&&VE._new)VE.iv=defIv(d.k);vehSheet()},
+ vsave:()=>{readIv();const v=VE;v.name=(v.name||'').trim();if(!v.name){toast('請填名稱');return}v.odo0=parseInt(v.odo0,10)||0;const isNew=v._new;delete v._new;
+  const L=VEH(),i=L.findIndex(x=>x.id===v.id);i>-1?L[i]=v:L.push(v);touch('meta');close();if(isNew){Q.veh=v.id;carSel=v.id}render();toast('已儲存車輛')},
+ vdel:(d,el)=>{const n=vtx(VE.id).length;if(n){toast('這台車還有 '+n+' 筆紀錄，先保留');return}if(!armed){armed=true;el.classList.add('arm');el.textContent='再按一次確認刪除';return}
+  S.meta.veh=VEH().filter(x=>x.id!==VE.id);touch('meta');close();render();toast('已刪除')},
+ fped:()=>fpSheet(),
  qb:d=>{Q.book=d.k;render()},qco:d=>{Q.co=d.k;S.meta.set.co=d.k;render()},qadv:d=>{Q.adv=d.k==='1';render()},
  qkind:()=>{Q.kind=Q.kind==='in'?'out':'in';render()},
  qmore:()=>open(`<div class="sht"><b>選擇分類</b><button class="sbtn" data-a="close">取消</button></div><div class="tiles" style="--c:${BOOKS[Q.book].c}">${qCats().map(c=>`<button data-a="qsave" data-k="${c}"><b>${esc(GLYC[Q.book+'|'+c]||c[0])}</b><small>${esc(SHORT[c]||c)}</small></button>`).join('')}</div>`),
@@ -629,6 +792,7 @@ const A={
   if(F.book==='farm'){t.adv=adv;if(F.kind==='out')S.meta.set.farmAdv=F.adv}
   if(adv)t.st=F.st||'pending';
   if(F.rec){t.rec=F.rec;t.per=F.per}
+  if(F.veh){t.veh=F.veh;t.vt=F.vt;const o=parseInt(F.odo,10);if(o>0)t.odo=o;const l=parseFloat(F.L);if(F.vt==='fuel'&&l>0)t.L=l;if(F.item)t.item=F.item;if(F.g)t.g=F.g}
   if(F.id)rmTx(F.id);addTx(t);touch('meta');close();render();toast(adv?'已記入代墊・'+party(t):'已記帳')},
  fdel:(d,el)=>{if(!armed){armed=true;el.classList.add('arm');el.textContent='再按一次確認刪除';return}
   const t=rmTx(F.id);close();render();toast('已刪除',()=>addTx(t))},
@@ -660,15 +824,18 @@ const A={
   if(COL){dirty.add('meta');Object.keys(S.months).forEach(k=>dirty.add('m'+k));flush()}window._imp=null;close();render();toast('已從備份還原')}
 };
 document.addEventListener('click',e=>{if(e.target.id==='ov'){close();return}const a=e.target.closest('[data-a]');if(a&&A[a.dataset.a])A[a.dataset.a](a.dataset,a,e)});
-document.addEventListener('input',e=>{const t=e.target;if(t.dataset.q)Q[t.dataset.q]=t.value;if(t.dataset.f&&F)F[t.dataset.f]=t.value;if(t.dataset.r&&R)R[t.dataset.r]=t.value;if(t.id==='q'){q=t.value.trim();const p=t.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)}});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.q)Q[t.dataset.q]=t.value;if(t.dataset.f&&F)F[t.dataset.f]=t.value;if(t.dataset.r&&R)R[t.dataset.r]=t.value;if(t.dataset.ve&&VE)VE[t.dataset.ve]=t.value;if(t.id==='q'){q=t.value.trim();const p=t.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)}});
 document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.cg!==undefined){const x=cfg().cats[CE][+t.dataset.cg];x.g=t.value.trim()||x.n[0];touch('meta')}
  if(t.dataset.cn!==undefined){const L=cfg().cats[CE],x=L[+t.dataset.cn],n=t.value.trim();if(!n||n===x.n){t.value=x.n;return}if(L.some(y=>y.n===n)){toast('已經有這個分類');t.value=x.n;return}
   renameEverywhere('cat',CE.split('.')[0],x.n,n);x.n=n;touch('meta');toast('已改名，過去紀錄一併更新')}
  if(t.dataset.co!==undefined){const L=cfg().cos,i=+t.dataset.co,o=L[i],n=t.value.trim();if(!n||n===o||n==='農場'||L.includes(n)){t.value=o;return}
   renameEverywhere('co','inspect',o,n);if(Q.co===o)Q.co=n;if(ap===o)ap=n;L[i]=n;touch('meta');toast('已改名，過去紀錄一併更新')}
+ if(t.dataset.fp){const v=parseFloat(t.value);if(v>0){FP()[t.dataset.fp]=v;touch('meta');toast('油價已更新')}else t.value=FP()[t.dataset.fp]}
  if(t.dataset.bn){cfg().bookN[t.dataset.bn]=t.value.trim()||DEFBN[t.dataset.bn];touch('meta')}
  if(t.dataset.sel){t.checked?sel.add(t.dataset.sel):sel.delete(t.dataset.sel);render()}
+ if(t.id==='vimp'&&t.files[0]){t.files[0].text().then(txt=>{try{const j=JSON.parse(txt);if(j.type!=='rizhang-veh'||!Array.isArray(j.records))throw 0;
+  const r=vImport(j);close();view='car';location.hash='car';render();toast(`${r.v.name}：加油 ${r.n} 筆、保養 ${r.mn} 筆（${fmt(r.sum)}）${r.skip?'，略過重複 '+r.skip+' 筆':''}`)}catch(x){toast('這不是車輛紀錄檔')}})}
  if(t.id==='imp'&&t.files[0]){t.files[0].text().then(txt=>{try{const d=JSON.parse(txt);if(!d.meta||!d.months)throw 0;window._imp=d;
   $('#impok').innerHTML=`<div class="hint" style="margin-top:12px">備份內有 ${Object.values(d.months).reduce((a,m)=>a+m.tx.length,0)} 筆紀錄。</div><button class="save" style="--c:var(--red)" data-a="impgo">確認覆蓋目前資料</button>`}catch(x){toast('這不是日帳的備份檔')}})}});
 document.addEventListener('keydown',e=>{if(view==='quick'&&!F&&!R&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){if(/^[0-9.]$/.test(e.key)){A.key({k:e.key});return}if(e.key==='Backspace'){A.key({k:'del'});return}}if(e.key==='Enter'&&F&&e.target.dataset.f==='amt'){e.preventDefault();A.fsave()}if(e.key==='Escape')close()});
