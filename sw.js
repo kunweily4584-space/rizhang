@@ -1,5 +1,5 @@
 // 日帳 service worker：先用快取秒開，背景再更新
-const CACHE = 'rizhang-v3';
+const CACHE = 'rizhang-v5';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

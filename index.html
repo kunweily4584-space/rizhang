@@ -294,7 +294,7 @@ const sumIn=(m,f)=>(S.months[m]?.tx||[]).filter(t=>t.kind==='in'&&f(t)).reduce((
 const bookLbl=t=>t.book==='personal'?'':'・'+(t.book==='inspect'?esc(t.co):t.book==='invest'?(t.kind==='in'?'贖回':'投資'):(t.adv?'農場代墊':'農場'));
 function txRow(t){const b=BOOKS[t.book];const p=party(t);
  const st=p&&t.st?`<span class="chip ${ST[t.st][1]}">${ST[t.st][0]}</span>`:'';
- return `<button class="row" style="--c:${b.c}" data-a="edit" data-id="${t.id}"><span class="dot"></span><span class="grow"><b>${esc(t.note||t.cat)}</b><small>${md(t.date)}・${esc(t.cat)}${bookLbl(t)}${st}</small></span><span class="amt num ${t.kind==='in'?'in':''}">${t.kind==='in'?'+':''}${fmt(t.amt)}</span></button>`}
+ return `<button class="row" style="--c:${b.c}" data-a="edit" data-id="${t.id}"><span class="dot"></span><span class="grow"><b>${esc(t.note||t.cat)}</b><small>${md(t.date)}・${esc(t.cat)}${bookLbl(t)}${st}${t.inv?'<span class="chip ok">發票</span>':''}</small></span><span class="amt num ${t.kind==='in'?'in':''}">${t.kind==='in'?'+':''}${fmt(t.amt)}</span></button>`}
 
 function vHome(){const m=today().slice(0,7),pm=addM(m,-1);
  const out=sumOut(m,t=>t.book==='personal'),inc=sumIn(m,t=>t.book==='personal'),last=sumOut(pm,t=>t.book==='personal');
@@ -485,6 +485,7 @@ function vQuickCar(){const V=VEH();if(!V.length)return `<div class="q">${modeSeg
  <div class="qtop"><span class="tag">${fuel?'加油':'保養'}・${esc(v.name)}</span><input type="date" class="qdate" data-q="date" value="${Q.date}" aria-label="日期"><div class="qtoday">${fuel?'平均':'目前'} <b class="num">${fuel?(fuelSer(v.id).avg?fuelSer(v.id).avg.toFixed(1)+' km/L':'—'):last.toLocaleString()+' km'}</b></div></div>
  ${rm.length?`<button class="due ${rm[0].st==='over'?'over':''}" data-a="qm" data-k="maint">${esc(rm[0].item)}・${esc(rm[0].txt)}${rm.length>1?'（另 '+(rm.length-1)+' 項）':''}<b>${Q.m==='maint'?'':'記保養 ›'}</b></button>`:''}
  ${v.farm?`<div class="sub2">${Object.entries(PAYN).map(([k,n])=>`<button class="${Q.pay===k?'on':''}" data-a="qpay" data-k="${k}">${n}</button>`).join('')}</div>`:''}
+ ${Q.inv?`<div class="due" style="--warn:var(--grn)">從發票補記・實付 ${fmt(Q.invNet)}<b data-a="qinvx">取消</b></div>`:''}
  <div class="qamt ${Q.f==='amt'?'':'off'}" id="qbox" data-a="qf" data-k="amt"><span>$</span><b id="qa" class="z">0</b></div>
  <div class="qf"><button class="qsm ${Q.f==='odo'?'on':''}" id="qodo" data-a="qf" data-k="odo"><span>里程</span><b id="qo" class="z"></b></button>${fuel?`<button class="qsm ${Q.f==='L'?'on':''}" data-a="qf" data-k="L"><span>公升</span><b id="ql" class="z"></b></button>`:`<div class="qsm" style="border-color:transparent"><span>上次加油</span><b class="z" style="font-size:18px">${lastF?md(lastF.date):'—'}</b></div>`}</div>
  <input class="qnote" data-q="note" value="${esc(Q.note)}" placeholder="備註（可不填）">
@@ -548,6 +549,85 @@ function vImport(j){let v=VEH().find(x=>x.plate===j.plate)||VEH().find(x=>x.name
   const t={id:nid(),kind:'out',book:b.book,amt:+r.amt,cat:b.cat,date:r.date,note:r.item+'・'+v.name,veh:v.id,vt:'maint',item:r.item,odo:+r.odo,imp:1};
   if(b.book==='farm'){t.adv=b.adv;if(b.adv)t.st='pending'}addTx(t);mn++;sum+= +r.amt});
  touch('meta');carSel=v.id;return{n,mn,skip,sum,v}}
+
+/* ---------- 電子發票對帳 ---------- */
+const EV=()=>S.meta.einv||(S.meta.einv={});
+const ERULE=()=>S.meta.set.erule||(S.meta.set.erule={});
+let ER=null;
+const unesc=x=>String(x||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
+function parseEinv(txt){const M={},order=[];
+ txt.replace(/^﻿/,'').split(/\r?\n/).forEach(l=>{const p=l.split('|');
+  if(p[0]==='M'&&p.length>=8&&/^\d{8}$/.test((p[3]||'').trim())){const no=p[6].trim(),d=p[3].trim();if(!no)return;
+   if(!M[no])order.push(no);M[no]={no,carrier:p[1],date:d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8),ban:(p[4]||'').trim(),store:unesc(p[5]),net:Math.round(+p[7]||0),st:(p[8]||'開立').trim(),items:[]}}
+  else if(p[0]==='D'&&M[(p[1]||'').trim()])M[p[1].trim()].items.push({a:Math.round(+p[2]||0),n:unesc(p[3])})});
+ return order.map(no=>{const v=M[no];v.gross=v.items.filter(x=>x.a>0).reduce((a,x)=>a+x.a,0)||v.net;return v})}
+const BRANDS=[[/蝦皮/,'蝦皮'],[/酷澎/,'酷澎'],[/統一超商/,'7-11'],[/全家便利/,'全家'],[/萊爾富/,'萊爾富'],[/台灣中油/,'中油'],[/台灣糖業|台糖/,'台糖'],[/台亞石油/,'台亞'],[/全聯/,'全聯'],[/和德昌/,'麥當勞'],[/寶雅/,'寶雅'],[/優衣庫/,'UNIQLO'],[/台灣大哥大/,'台灣大哥大'],[/中華電信/,'中華電信'],[/遠傳/,'遠傳']];
+function shortStore(s){const st=(s.match(/([^司部處業]{1,8}加油站)$/)||[])[1];for(const[re,n]of BRANDS)if(re.test(s))return n+(st&&n!==st?' '+st:'');
+ return s.replace(/(股份)?有限公司|新加坡商|台灣分公司/g,' ').replace(/\s+/g,' ').trim()||s}
+const isFuelInv=v=>/加油站/.test(v.store)||v.items.some(x=>/無鉛|柴油|汽油/.test(x.n)&&x.a>0);
+const gradeOf=v=>{const t=v.items.map(x=>x.n).join(' ');return /柴油/.test(t)?'柴油':/98/.test(t)?'98':/95/.test(t)?'95':'92'};
+const pc=c=>{const L=CATS.personal.out;return L.includes(c)?c:L.includes('其他')?'其他':L[L.length-1]};
+const fcat=c=>{const L=CATS.farm.out;return L.includes(c)?c:L[L.length-1]};
+function eGuess(v){const R_=ERULE()[v.ban||v.store];if(R_)return{...R_,learned:1};
+ const s=v.store,it=v.items.map(x=>x.n).join(' '),all=s+' '+it;
+ if(isFuelInv(v))return{book:'personal',cat:pc('交通'),fuel:1};
+ const names=VEH().filter(x=>x.farm).flatMap(x=>[x.plate,x.name]).filter(Boolean);
+ if(/菱利|veryca|凌利/i.test(it)||names.some(n=>it.includes(n)))return{book:'farm',adv:true,cat:fcat('交通與雜支'),car:1};
+ const rules=[[/藥局|藥房|診所|醫院|牙醫/,'醫療'],[/電信費|大哥大|中華電信|遠傳|亞太電信/,'電信網路'],[/停車|租賃|客運|高鐵|台鐵|捷運|遠通/,'交通'],
+  [/蝦皮|酷澎|momo|生活館|寶雅|百貨|優衣庫|服裝|笑笑笑|康達盛通|全聯|家樂福|大潤發|好市多|文具|五金|IKEA|宜得利/i,'購物'],
+  [/茶|飲|咖啡|冰|餐|便當|食|麥當勞|和德昌|摩斯|早餐|麵|飯|鍋|菇|統一超商|全家|萊爾富|小吃|烘焙|麵包/,'餐飲']];
+ for(const[re,c]of rules)if(re.test(all))return{book:'personal',cat:pc(c),rec:/電信費|月費|訂閱|會員費/.test(it)?1:0};
+ return{book:'personal',cat:pc('其他')}}
+function eMatch(list){const pool=allTx().filter(t=>t.kind==='out'&&!t.inv),pairs=[];
+ list.forEach((v,i)=>{const fuel=isFuelInv(v);pool.forEach(t=>{const dd=Math.abs(diff(t.date,v.date));if(dd>1)return;const a=Math.round(+t.amt);let sc;
+  if(a===v.net)sc=0;else if(a===v.gross)sc=.5;else if(fuel&&t.vt==='fuel'&&(Math.abs(a-v.gross)<=2||Math.abs(a-v.net)<=2))sc=2;else return;
+  sc+=dd*3+((t.vt==='fuel')!==fuel?1.5:0);pairs.push([sc,i,t])})});
+ pairs.sort((a,b)=>a[0]-b[0]);const vi=new Set(),ti=new Set(),m=[];
+ for(const[sc,i,t]of pairs){if(vi.has(i)||ti.has(t.id))continue;vi.add(i);ti.add(t.id);m.push({v:list[i],t,fix:Math.round(+t.amt)!==list[i].net})}
+ const missing=list.filter((_,i)=>!vi.has(i)).map(v=>{let dup=null,best=99;const isF=isFuelInv(v);pool.forEach(t=>{if(ti.has(t.id))return;const a=Math.round(+t.amt);if(!(a>0))return;
+   if(t.vt==='fuel'&&!isF)return;if(isF&&t.vt==='maint')return;const dd=Math.abs(diff(t.date,v.date));if(dd>7)return;
+   const exact=a===v.net||a===v.gross,near=!exact&&v.net>=100&&Math.abs(a-v.net)<=v.net*.03;if(!exact&&!near)return;if(v.net<30&&dd>1)return;
+   const sc=dd+(exact?0:2);if(sc<best){best=sc;dup=t}});
+  if(dup)ti.add(dup.id);return{v,g:eGuess(v),dup}}).sort((a,b)=>a.v.date<b.v.date?1:-1);
+ return{matched:m.sort((a,b)=>a.v.date<b.v.date?1:-1),missing}}
+function einvDone(){const d=new Map(Object.entries(EV()));allTx().forEach(t=>{if(t.inv&&!d.has(t.inv))d.set(t.inv,['a',t.id])});return d}
+function einvStart(){let m='';allTx().forEach(t=>{if(t.imp||t.inv||t.rec)return;if(!m||t.date<m)m=t.date});return m}
+function einvLoad(txt){const all=parseEinv(txt);if(!all.length)throw 0;const ev=einvDone();
+ const fresh=all.filter(v=>!ev.has(v.no)),voided=all.filter(v=>v.st!=='開立'&&ev.has(v.no)&&ev.get(v.no)[0]==='a');
+ const list=fresh.filter(v=>v.st==='開立'&&v.net>0);const r=eMatch(list);const st=einvStart();
+ r.old=st?r.missing.filter(x=>x.v.date<st):[];r.missing=r.missing.filter(x=>!st||x.v.date>=st);r.start=st;
+ ER={total:all.length,zero:fresh.filter(v=>v.st==='開立'&&!(v.net>0)).length,dup:all.length-fresh.length,voidN:fresh.length-list.length,voided,fixAmt:true,...r,range:[all.reduce((a,v)=>v.date<a?v.date:a,'9999'),all.reduce((a,v)=>v.date>a?v.date:a,'')]};einvSheet()}
+const eDesc=v=>{const it=v.items.filter(x=>x.a>0).map(x=>x.n.replace(/【[^】]*】/g,'')).join('、');return it.length>28?it.slice(0,28)+'…':it};
+function eOpts(g){const o=[];CATS.personal.out.forEach(c=>o.push([`personal|${c}`,`個人・${c}`]));CATS.farm.out.forEach(c=>o.push([`farmadv|${c}`,`農場代墊・${c}`]));CATS.farm.out.forEach(c=>o.push([`farm|${c}`,`農場自付・${c}`]));
+ COS.forEach(co=>CATS.inspect.out.forEach(c=>o.push([`inspect|${c}|${co}`,`${co}代墊・${c}`])));
+ const cur=g.book==='farm'?(g.adv?'farmadv':'farm')+'|'+g.cat:g.book==='inspect'?`inspect|${g.cat}|${g.co}`:`personal|${g.cat}`;
+ return o.map(([k,n])=>`<option value="${esc(k)}" ${k===cur?'selected':''}>${esc(n)}</option>`).join('')}
+function einvSheet(){const r=ER;if(!r)return;const [a,b]=r.range;
+ const fixN=r.matched.filter(m=>m.fix).length,fixSum=r.matched.filter(m=>m.fix).reduce((s,m)=>s+(+m.t.amt-m.v.net),0);
+ open(`<div class="sht"><b>發票對帳</b><button class="sbtn" data-a="close">關閉</button></div>
+ <div class="card box" style="margin-bottom:12px"><div class="lbl">${md(a)}–${md(b)}・檔案共 ${r.total} 張${r.dup?`，其中 ${r.dup} 張之前處理過已略過`:''}${r.voidN?`，${r.voidN} 張作廢不計`:''}${r.zero?`，${r.zero} 張 $0 不計`:''}</div>
+ <div class="kv" style="padding:10px 0 0"><div><span>自動對到</span><b class="num" style="color:var(--grn)">${r.matched.length} 筆</b></div><div><span>沒記到的發票</span><b class="num" style="color:var(--i)">${r.missing.length} 筆</b></div></div>
+ ${r.missing.some(x=>x.dup)?`<div class="hint" style="margin:8px 0 0;color:var(--warn)">${r.missing.filter(x=>x.dup).length} 張可能已經手動記過（金額接近、日期差幾天），請逐筆確認，避免重複</div>`:''}
+ ${r.voided.length?`<div class="hint" style="margin:8px 0 0;color:var(--red)">有 ${r.voided.length} 張已對帳的發票後來作廢：${r.voided.map(v=>md(v.date)+' '+esc(shortStore(v.store))+' '+fmt(v.net)).join('、')}，請檢查那幾筆紀錄。</div>`:''}</div>
+ ${r.matched.length?`<h3 style="margin-top:4px">已對到 ${r.matched.length} 筆</h3>
+ ${fixN?`<label class="row" style="background:var(--card);border-radius:14px;margin-bottom:8px"><input type="checkbox" class="ck" id="efix" ${r.fixAmt?'checked':''}><span class="grow"><b>記帳金額改成實付</b><small>${fixN} 筆有折扣，合計少 ${fmt(fixSum)}；加油的公升數不變</small></span></label>`:''}
+ <details><summary class="lbl" style="min-height:36px;padding:4px">看對到哪些</summary><div class="card">${r.matched.map(m=>`<div class="row"><span class="grow"><b>${md(m.v.date)} ${esc(shortStore(m.v.store))}</b><small>對到：${esc(m.t.note||m.t.cat)} ${fmt(m.t.amt)}${m.fix?` → 實付 ${fmt(m.v.net)}`:''}</small></span><span class="amt num">${fmt(m.v.net)}</span></div>`).join('')}</div></details>
+ <button class="save" data-a="eok">確認對帳（${r.matched.length} 筆）</button>`:''}
+ ${r.missing.length?`<h3>沒記到的發票（${r.missing.length}）${r.missing.some(x=>!x.g.fuel&&!x.dup)?'<button data-a="eall">其餘全部補記</button>':''}</h3>
+ <div class="card">${r.missing.map((x,i)=>{const v=x.v,g=x.g;return `<div class="row" style="flex-wrap:wrap;gap:8px 12px"><span class="grow" style="flex:1 1 0"><b>${md(v.date)} ${esc(shortStore(v.store))}</b><small>${esc(eDesc(v))}</small></span><span class="amt num">${fmt(v.net)}</span>
+  <div style="display:flex;gap:6px;width:100%;align-items:center">${g.fuel?`<span class="lbl" style="flex:1">像是加油（${gradeOf(v)}${v.gross!==v.net?`，折扣前 ${fmt(v.gross)}`:''}）</span><button class="sbtn pri" style="background:var(--car)" data-a="efuel" data-i="${i}">記成加油</button>`:
+  `<select data-ec="${i}" style="flex:1;min-width:0;min-height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card2);padding:0 8px;font-size:15px" aria-label="分類">${eOpts(g)}</select><button class="sbtn pri" data-a="eadd" data-i="${i}">補記</button>`}
+  <button class="sbtn" data-a="eskip" data-i="${i}">略過</button></div>
+  ${x.dup?`<div style="width:100%;background:color-mix(in srgb,var(--warn) 14%,transparent);border-radius:10px;padding:8px 10px;font-size:14px;color:var(--warn);display:flex;gap:8px;align-items:center"><span style="flex:1">可能已記過：${md(x.dup.date)} ${esc(x.dup.note||x.dup.cat)} ${fmt(x.dup.amt)}</span><button class="sbtn" data-a="elink" data-i="${i}">就是這筆</button></div>`:''}
+  ${g.car?'<span class="chip pend" style="flex-basis:100%;text-align:center">品名提到公務車，預設記成農場代墊</span>':''}${g.rec?'<span class="chip soon" style="flex-basis:100%;text-align:center">像是每月固定費用，可到「定期」新增</span>':''}${g.learned?'<span class="chip" style="flex-basis:100%;text-align:center">用你上次的分類</span>':''}</div>`}).join('')}</div>
+ <div class="hint" style="margin-top:8px">「其餘全部補記」不會動到加油和「可能已記過」的，那些請逐筆處理。「略過」適合別人代付或不用記的。</div>`:''}
+ ${r.old&&r.old.length?`<h3>開始用日帳之前（${md(r.start)} 以前）・${r.old.length} 張</h3>
+ <div class="card box"><div class="lbl">這些發票在你開始記帳之前，通常不用補。要補進去當歷史紀錄也可以，會照猜的分類記入（加油站的記成個人交通）。</div>
+ <div style="display:flex;gap:8px;margin-top:10px"><button class="sbtn" style="flex:1;min-height:42px" data-a="eoldskip">全部不補（${fmt(r.old.reduce((a,x)=>a+x.v.net,0))}）</button><button class="sbtn pri" style="flex:1;min-height:42px" data-a="eoldadd">全部補記成歷史</button></div></div>`:''}
+ ${!r.matched.length&&!r.missing.length&&!(r.old&&r.old.length)?'<div class="empty">這份檔案的發票都處理過了，不會重複記帳</div>':''}`)}
+function eTx(v,g){const t={id:nid(),kind:'out',book:g.book,amt:v.net,cat:g.cat,date:v.date,note:shortStore(v.store)+(eDesc(v)?' '+eDesc(v):''),inv:v.no};
+ if(t.note.length>40)t.note=t.note.slice(0,40);
+ if(g.book==='inspect'){t.co=g.co;t.st='pending'}if(g.book==='farm'){t.adv=!!g.adv;if(g.adv)t.st='pending'}return t}
 function render(){applyCfg();document.body.classList.toggle('race',view==='car'||(view==='quick'&&Q.m!=='tx'));
  document.querySelectorAll('nav [data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===view||(view==='list'&&b.dataset.v==='home')));
  $('#main').innerHTML={quick:vQuick,home:vHome,list:vList,car:vCar,adv:vAdv,stats:vStats,rec:vRec}[view]()+(view==='quick'?'':'<div class="sign">annjohn 與他的ai小夥伴協力製作</div>');qShow()}
@@ -599,6 +679,8 @@ function settings(){const n=allTx().length;
  <button class="row" data-a="sharebak"><span class="grow"><b>分享備份檔</b><small>跳出分享選單，選「雲端硬碟」即可存檔</small></span><span>›</span></button>
  <button class="row" data-a="gdset"><span class="grow"><b>${gcid()?'Google 雲端硬碟連線設定':'設定一鍵備份到 Google 雲端硬碟'}</b><small>${gcid()?'已設定 Client ID':'需要一次性設定（約 10 分鐘）'}</small></span><span>›</span></button></div>
  <div class="card" style="margin-bottom:12px"><button class="row" data-a="cated"><span class="grow"><b>分類管理</b><small>新增、改名、刪除、排序；前 7 個會出現在記帳頁</small></span><span>›</span></button>
+ <label class="row"><span class="grow"><b>電子發票對帳</b><small>匯入載具消費明細（財政部平台下載的 CSV），找出漏記的消費</small></span><input type="file" accept=".csv,.txt,text/csv,text/plain" id="einv" style="width:7em;font-size:13px"></label>
+ ${ER&&(ER.matched.length||ER.missing.length||(ER.old&&ER.old.length))?`<button class="row" data-a="eopen"><span class="grow"><b>繼續處理發票</b><small>還有 ${ER.missing.length} 筆沒記到${ER.matched.length?'、'+ER.matched.length+' 筆待確認':''}</small></span><span>›</span></button>`:''}
  <button class="row" data-a="fped"><span class="grow"><b>車輛與油價</b><small>${VEH().length} 台車・92 無鉛 ${FP()['92']}</small></span><span>›</span></button>
  <button class="row" data-a="coed"><span class="grow"><b>代墊對象與帳本名稱</b><small>驗屋公司清單（${COS.map(esc).join('、')}）</small></span><span>›</span></button></div>
  <div class="card"><button class="row" data-a="csv" data-k="m"><span class="grow"><b>匯出 ${mL(cur)} CSV</b><small>可用 Excel／Google 試算表開啟</small></span></button>
@@ -740,7 +822,7 @@ const A={
  coadd:()=>{const n=$('#conew').value.trim();const L=cfg().cos;if(!n||n==='農場')return;if(L.includes(n)){toast('已經有這間公司');return}L.push(n);touch('meta');coEd()},
  key:d=>{const fl=Q.m==='tx'?'amt':Q.f,int=fl==='odo';let v=Q[fl];if(d.k==='del')v=v.slice(0,-1);else if(d.k==='.'){if(int)return;if(!v.includes('.'))v=(v||'0')+'.'}else{if(v==='0')v='';if(v.includes('.')&&v.split('.')[1].length>=(fl==='L'?3:2))return;if(v.replace('.','').length>=(int?7:9))return;v+=d.k}Q[fl]=v;qShow()},
  qm:d=>{Q.m=d.k;Q.f='amt';if(view!=='quick'){view='quick';location.hash=''}render()},
- qveh:d=>{Q.veh=d.k;Q.odo='';Q.L='';render()},qpay:d=>{Q.pay=d.k;render()},qf:d=>{Q.f=d.k;render()},
+ qveh:d=>{Q.veh=d.k;Q.odo='';if(!Q.inv)Q.L='';render()},qpay:d=>{Q.pay=d.k;render()},qf:d=>{Q.f=d.k;render()},
  cgo:d=>{Q.veh=carSel;Q.m=d.k;Q.f='amt';view='quick';location.hash='';render();scrollTo(0,0)},
  csel:d=>{carSel=d.k;render()},
  cmore:()=>open(`<div class="sht"><b>保養項目</b><button class="sbtn" data-a="close">取消</button></div><div class="tiles" style="--c:var(--car)">${ITEMS.map(i=>`<button data-a="csave" data-k="${i}"><b>${IG[i]}</b><small>${i}</small></button>`).join('')}</div>`),
@@ -755,10 +837,11 @@ const A={
   const pay=v.farm?Q.pay:'own',b=vBook(v,pay);
   const t={id:nid(),kind:'out',book:b.book,amt,cat:b.cat,date,note:Q.note.trim()||((fuel?'加油':d.k)+'・'+v.name),veh:v.id,vt:Q.m};
   if(odo>0)t.odo=odo;if(fuel){t.L=L;t.g=d.k}else t.item=d.k;
+  if(Q.inv){t.inv=Q.inv;EV()[Q.inv]=['a',t.id];if(Q.invNet&&Q.invNet<amt){t.amtOrig=amt;t.amt=Q.invNet}Q.inv='';Q.invNet=0}
   if(b.book==='farm'){t.adv=b.adv;if(b.adv)t.st='pending'}
   S.meta.set.veh=v.id;if(v.farm)S.meta.set.pay=pay;
   addTx(t);touch('meta');Q.amt='';Q.odo='';Q.L='';Q.note='';Q.f='amt';render();try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}
-  let msg=fuel?`已記加油 ${fmt(amt)}・${L} L`:`已記 ${d.k} ${fmt(amt)}`;
+  let msg=fuel?`已記加油 ${fmt(t.amt)}・${L} L`:`已記 ${d.k} ${fmt(t.amt)}`;
   if(fuel){const r=fuelSer(v.id).rs.find(x=>x.id===t.id);if(r&&r.eff)msg+=`・${r.eff.toFixed(2)} km/L`}
   if(t.adv)msg+='・農場代墊';toast(msg,()=>rmTx(t.id))},
  vpreset:()=>{S.meta.veh=[{id:nid(),name:'NZC',plate:'NZC-6306',type:'機車',grade:'92',farm:false,odo0:38075,iv:defIv('機車')},{id:nid(),name:'AKQ-6313',plate:'AKQ-6313',type:'貨車',grade:'92',farm:true,odo0:115812,iv:defIv('貨車')},{id:nid(),name:'公務車252',plate:'252-TFP',type:'機車',grade:'92',farm:true,odo0:29300,iv:defIv('機車')}];touch('meta');render();toast('已建立三台車，可到「車輛 › 編輯」調整')},
@@ -769,6 +852,23 @@ const A={
  vdel:(d,el)=>{const n=vtx(VE.id).length;if(n){toast('這台車還有 '+n+' 筆紀錄，先保留');return}if(!armed){armed=true;el.classList.add('arm');el.textContent='再按一次確認刪除';return}
   S.meta.veh=VEH().filter(x=>x.id!==VE.id);touch('meta');close();render();toast('已刪除')},
  fped:()=>fpSheet(),
+ eopen:()=>einvSheet(),
+ elink:d=>{const x=ER.missing[+d.i];if(!x||!x.dup)return;const t=getTx(x.dup.id);if(!t)return;t.inv=x.v.no;if(ER.fixAmt&&Math.round(+t.amt)!==x.v.net&&Math.abs(+t.amt-x.v.net)<=Math.max(3,x.v.net*.03)){t.amtOrig=t.amt;t.amt=x.v.net}
+  touch('m'+t.date.slice(0,7));EV()[x.v.no]=['a',t.id];touch('meta');ER.missing.splice(+d.i,1);einvSheet();render();toast('已和這筆對帳，不會重複記')},
+ eoldskip:()=>{ER.old.forEach(x=>EV()[x.v.no]=['x']);const n=ER.old.length;ER.old=[];touch('meta');einvSheet();toast(`${n} 張標為不補，之後不會再出現`)},
+ eoldadd:()=>{let n=0,sum=0;ER.old.forEach(x=>{const g=x.g.fuel?{book:'personal',cat:pc('交通')}:x.g;const t=eTx(x.v,g);addTx(t);EV()[x.v.no]=['a',t.id];n++;sum+=t.amt});ER.old=[];touch('meta');einvSheet();render();toast(`已補記 ${n} 筆歷史，共 ${fmt(sum)}`)},
+ qinvx:()=>{Q.inv='';Q.invNet=0;Q.amt='';Q.L='';Q.date=today();render()},
+ eok:()=>{const r=ER;if(!r)return;const fix=r.fixAmt;const ks=new Set();
+  r.matched.forEach(m=>{const t=getTx(m.t.id);if(!t)return;t.inv=m.v.no;if(fix&&m.fix){t.amtOrig=t.amt;t.amt=m.v.net}ks.add('m'+t.date.slice(0,7));EV()[m.v.no]=['a',t.id]});
+  ks.forEach(touch);touch('meta');const n=r.matched.length;r.matched=[];einvSheet();render();toast(`已對帳 ${n} 筆`)},
+ eadd:d=>{const x=ER.missing[+d.i];if(!x)return;if(einvDone().has(x.v.no)){ER.missing.splice(+d.i,1);einvSheet();toast('這張發票已經處理過了');return}const t=eTx(x.v,x.g);addTx(t);EV()[x.v.no]=['a',t.id];touch('meta');ER.missing.splice(+d.i,1);einvSheet();render();toast(`已補記 ${t.cat} ${fmt(t.amt)}`,()=>{rmTx(t.id);delete EV()[x.v.no];touch('meta');ER.missing.splice(+d.i,0,x);einvSheet()})},
+ eall:()=>{const keep=[];let n=0,sum=0;ER.missing.forEach(x=>{if(x.g.fuel||x.dup){keep.push(x);return}const t=eTx(x.v,x.g);addTx(t);EV()[x.v.no]=['a',t.id];n++;sum+=t.amt});
+  ER.missing=keep;touch('meta');einvSheet();render();toast(`已補記 ${n} 筆，共 ${fmt(sum)}`)},
+ eskip:d=>{const x=ER.missing[+d.i];if(!x)return;EV()[x.v.no]=['x'];touch('meta');ER.missing.splice(+d.i,1);einvSheet();toast('已略過',()=>{delete EV()[x.v.no];touch('meta');ER.missing.splice(+d.i,0,x);einvSheet()})},
+ efuel:d=>{const x=ER.missing[+d.i];if(!x)return;const V=VEH();if(!V.length){toast('先建立車輛');return}
+  const v=vOf(S.meta.set.veh)||V[0];Q.m='fuel';Q.veh=v.id;Q.amt=String(x.v.gross);Q.odo='';Q.f='odo';Q.date=x.v.date;Q.note='';Q.inv=x.v.no;Q.invNet=x.v.net;
+  const p=+FP()[gradeOf(x.v)]||+FP()[v.grade];Q.L=p?(x.v.gross/p).toFixed(2):'';
+  ER.missing.splice(+d.i,1);close();view='quick';location.hash='';render();scrollTo(0,0);toast('確認車輛、輸入里程，再點油品存檔')},
  qb:d=>{Q.book=d.k;render()},qco:d=>{Q.co=d.k;S.meta.set.co=d.k;render()},qadv:d=>{Q.adv=d.k==='1';render()},
  qkind:()=>{Q.kind=Q.kind==='in'?'out':'in';render()},
  qmore:()=>open(`<div class="sht"><b>選擇分類</b><button class="sbtn" data-a="close">取消</button></div><div class="tiles" style="--c:${BOOKS[Q.book].c}">${qCats().map(c=>`<button data-a="qsave" data-k="${c}"><b>${esc(GLYC[Q.book+'|'+c]||c[0])}</b><small>${esc(SHORT[c]||c)}</small></button>`).join('')}</div>`),
@@ -792,6 +892,7 @@ const A={
   if(F.book==='farm'){t.adv=adv;if(F.kind==='out')S.meta.set.farmAdv=F.adv}
   if(adv)t.st=F.st||'pending';
   if(F.rec){t.rec=F.rec;t.per=F.per}
+  if(F.inv)t.inv=F.inv;if(F.amtOrig)t.amtOrig=F.amtOrig;
   if(F.veh){t.veh=F.veh;t.vt=F.vt;const o=parseInt(F.odo,10);if(o>0)t.odo=o;const l=parseFloat(F.L);if(F.vt==='fuel'&&l>0)t.L=l;if(F.item)t.item=F.item;if(F.g)t.g=F.g}
   if(F.id)rmTx(F.id);addTx(t);touch('meta');close();render();toast(adv?'已記入代墊・'+party(t):'已記帳')},
  fdel:(d,el)=>{if(!armed){armed=true;el.classList.add('arm');el.textContent='再按一次確認刪除';return}
@@ -834,6 +935,14 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.dataset.fp){const v=parseFloat(t.value);if(v>0){FP()[t.dataset.fp]=v;touch('meta');toast('油價已更新')}else t.value=FP()[t.dataset.fp]}
  if(t.dataset.bn){cfg().bookN[t.dataset.bn]=t.value.trim()||DEFBN[t.dataset.bn];touch('meta')}
  if(t.dataset.sel){t.checked?sel.add(t.dataset.sel):sel.delete(t.dataset.sel);render()}
+ if(t.id==='einv'&&t.files[0]){t.files[0].arrayBuffer().then(buf=>{let txt=new TextDecoder('utf-8').decode(buf);
+  if(!/(^|\n)M\|/.test(txt)||(txt.match(/\uFFFD/g)||[]).length>5){try{txt=new TextDecoder('big5').decode(buf)}catch(e){}}
+  try{einvLoad(txt)}catch(x){toast('看不懂這個檔案，請用財政部平台下載的載具消費明細 CSV')}})}
+ if(t.id==='efix'&&ER){ER.fixAmt=t.checked}
+ if(t.dataset.ec!==undefined&&ER){const x=ER.missing[+t.dataset.ec];const[b,c,co]=t.value.split('|');
+  x.g=b==='personal'?{book:'personal',cat:c}:b==='inspect'?{book:'inspect',cat:c,co}:{book:'farm',cat:c,adv:b==='farmadv'};
+  const key=x.v.ban||x.v.store;ERULE()[key]={...x.g};touch('meta');
+  ER.missing.forEach(y=>{if(y!==x&&(y.v.ban||y.v.store)===key&&!y.g.fuel)y.g={...x.g,learned:1}});einvSheet()}
  if(t.id==='vimp'&&t.files[0]){t.files[0].text().then(txt=>{try{const j=JSON.parse(txt);if(j.type!=='rizhang-veh'||!Array.isArray(j.records))throw 0;
   const r=vImport(j);close();view='car';location.hash='car';render();toast(`${r.v.name}：加油 ${r.n} 筆、保養 ${r.mn} 筆（${fmt(r.sum)}）${r.skip?'，略過重複 '+r.skip+' 筆':''}`)}catch(x){toast('這不是車輛紀錄檔')}})}
  if(t.id==='imp'&&t.files[0]){t.files[0].text().then(txt=>{try{const d=JSON.parse(txt);if(!d.meta||!d.months)throw 0;window._imp=d;
